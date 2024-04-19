@@ -14,11 +14,11 @@ def cat(inputs, dim=0, output_device=None):
     if all(torch.is_tensor(i) for i in inputs):
         return torch.cat(inputs, dim=dim)
 
-    inputs = [lazify(i) for i in inputs]
-
+    # Check if all inputs are NonLazyTensor and handle them directly
     if all(isinstance(i, NonLazyTensor) for i in inputs):
-        # Dont form a CatLazyTensor if all tensors are NonLazyTensor
-        return lazify(torch.cat([delazify(i) for i in inputs], dim=dim))
+        return torch.cat([i.tensor for i in inputs], dim=dim)  # Direct concatenation of tensors without lazify/delazify
+
+    inputs = [lazify(i) for i in inputs]
 
     if output_device is None and all(i.device == inputs[0].device for i in inputs):
         output_device = inputs[0].device
