@@ -1,0 +1,3 @@
+[submodule "PyEvolve"]
+	path = PyEvolve
+	url = https://github.com/maldil/PyEvolve.git
