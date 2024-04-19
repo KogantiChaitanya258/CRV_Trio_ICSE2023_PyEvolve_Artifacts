@@ -28,22 +28,22 @@ public class AdaptRule {
     }
 
     public Rule getAdaptedRule() {
-        Rule rule=new Rule();
+        Rule rule = new Rule();
         FunctionDef lhsSubstitutedCode = substituteLHStoTargetCode();
         System.out.println(lhsSubstitutedCode);
         FunctionDef renamedNames = renameRestOfTheRenamedVarsWithHoles(lhsSubstitutedCode);
         FunctionDef lhs = normalizeLHSContext(renamedNames);
         System.out.println(lhs);
-        List<PyObject> collect = this.graph.getAllMatchedNodes().stream().map(MatchedNode::getPatternNode).
-                map(PDGNode::getAstNode).collect(Collectors.toList());
-        collect.addAll(this.graph.getAllMatchedNodes().stream().map(MatchedNode::getCodeNode).
-                map(PDGNode::getAstNode).collect(Collectors.toList()));
+
+        // Combining stream operations to collect pattern and code nodes in one go
+        List<PyObject> collect = this.graph.getAllMatchedNodes().stream().flatMap(node -> Stream.of(node.getPatternNode().getAstNode(), node.getCodeNode().getAstNode())).collect(Collectors.toList());
+
         rule.setLHS(lhs.getInternalBody().stream().map(Object::toString).collect(Collectors.joining("\n")));
-        FunctionDef rhs = createRHS(renamedNames,rhsAST,collect);
+        FunctionDef rhs = createRHS(renamedNames, rhsAST, collect);
         rule.setRHS(rhs.getInternalBody().stream().map(Object::toString).collect(Collectors.joining("\n")));
-//        System.out.println(getFunctionDef(rhs).toString());
+
         return rule;
-    }
+}
 
     public FunctionDef getFunctionDef(Module md){
         for (stmt stmt : md.getInternalBody()) {
